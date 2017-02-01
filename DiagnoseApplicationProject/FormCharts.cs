@@ -97,27 +97,27 @@ namespace WindowsFormsApplication6
             // Set property for the other series of chart 4
             for (int i = 4; i < 6; i++)
             {
-                chartSeries[i] = charts[3].Series[i-3];
+                chartSeries[i] = charts[3].Series[i - 3];
                 chartSeries[i].ChartType = SeriesChartType.Line;
-                charts[3].Series[i-3].BorderWidth = 3;
-                charts[3].Series[i-3].Color = graphLineColors[i-3];
+                charts[3].Series[i - 3].BorderWidth = 3;
+                charts[3].Series[i - 3].Color = graphLineColors[i - 3];
             }
         }
 
         private void OnChartEvent(object sender, EventArgs e)
         {
-            
+
             if ((chartData[0] != -9999) && (chartData[1] != -9999) && (chartData[2] != -9999) && (chartData[3] != -9999))
             {
 
-                    //if (((dataCounter > 0) && ((Decimal)chartDataCont[dataCounter - 1].GetValue(3) != chartData[3])) || (dataCounter == 0))
-                    //{
-                        //chartDataCont[dataCounter] = chartData;
-                        setDataToGraph(chartData);
-                        dataCounter++;
-                    //}
-                
-            } 
+                //if (((dataCounter > 0) && ((Decimal)chartDataCont[dataCounter - 1].GetValue(3) != chartData[3])) || (dataCounter == 0))
+                //{
+                //chartDataCont[dataCounter] = chartData;
+                setDataToGraph(chartData);
+                dataCounter++;
+                //}
+
+            }
         }
 
         private void setTitle(string name)
@@ -145,7 +145,7 @@ namespace WindowsFormsApplication6
 
         private void setDataToGraph(Decimal[] chartData)
         {
-                        chartX.ChartAreas[0].AxisX.Title = "Timestamp [ms]";
+            chartX.ChartAreas[0].AxisX.Title = "Timestamp [ms]";
             chartX.ChartAreas[0].AxisY.Title = "Angle " + chartXaxisLabel[0] + " [deg]";
 
             chartY.ChartAreas[0].AxisX.Title = "Timestamp [ms]";
@@ -173,7 +173,7 @@ namespace WindowsFormsApplication6
             chartSeries[5].Points.AddXY(chartData[3], chartData[2]);
             chartXYZ.Invalidate();
 
-            
+
         }
 
         private void Snapshot_Click(object sender, EventArgs e)
@@ -182,17 +182,19 @@ namespace WindowsFormsApplication6
 
             // capture entire screen, and save it to a file
             Image img = sc.CaptureScreen();
-       
+
             // capture this window, and save it
-            sc.CaptureWindowToFile(this.Handle, FILE_SAVE_PATH + graphName + ".png", ImageFormat.Png);
-         
+            sc.CaptureWindowToFile(this.Handle, FILE_SAVE_PATH + numericUpDownSensorSelector.Value + ".png", ImageFormat.Png);
+
+            
+
             notifyIcon.Visible = true;
 
             notifyIcon.BalloonTipTitle = "Movement Diagnose Data";
             notifyIcon.Icon = SystemIcons.Application;
             notifyIcon.BalloonTipText = "Screenshot created succesfully";
             notifyIcon.ShowBalloonTip(300);
-            
+
         }
 
         private void FormX_Closing(object sender, FormClosingEventArgs e)

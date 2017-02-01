@@ -28,6 +28,7 @@ namespace WindowsFormsApplication6
         int inc = 0;
         private bool recordIsActive = false;
         private bool calibrationIsActive = false;
+        private bool startMeas = false;
 
         private System.IO.StreamWriter writer = new System.IO.StreamWriter("DiagnoseDebugLog.log", true);
         private RBC.TcpIpCommunicationUnit tcpDiagnoseClient = null;
@@ -555,7 +556,7 @@ namespace WindowsFormsApplication6
             try
             {
                 cmd = connection.CreateCommand();
-                cmd.CommandText = "DELETE FROM s"+tableId+" WHERE 1";
+                cmd.CommandText = "DELETE FROM s" + tableId + " WHERE 1";
                 cmd.ExecuteNonQuery();
             }
             catch (Exception)
@@ -574,7 +575,7 @@ namespace WindowsFormsApplication6
 
         private void xampp_addContent(string dbName, int tableId, Decimal[] data)
         {
-            string conStringXampp = "Server=localhost;Database="+ dbName+"; Uid=root;Pwd=rbc;";
+            string conStringXampp = "Server=localhost;Database=" + dbName + "; Uid=root;Pwd=rbc;";
             MySqlConnection connection = new MySqlConnection(conStringXampp);
             MySqlCommand cmd;
             connection.Open();
@@ -582,7 +583,7 @@ namespace WindowsFormsApplication6
             try
             {
                 cmd = connection.CreateCommand();
-                cmd.CommandText = "INSERT INTO s"+ tableId + "(x,y,z,timestamp)VALUES(@x,@y,@z,@timestamp)";
+                cmd.CommandText = "INSERT INTO s" + tableId + "(x,y,z,timestamp)VALUES(@x,@y,@z,@timestamp)";
                 cmd.Parameters.AddWithValue("@x", data[0]);
                 cmd.Parameters.AddWithValue("@y", data[1]);
                 cmd.Parameters.AddWithValue("@z", data[2]);
@@ -756,82 +757,98 @@ namespace WindowsFormsApplication6
         void tcpMsgRecEvent(string[] receivedMessage)
         {
             String message = receivedMessage[0];
-            double[] sensorValues = new double[3];
-            int sensor_joint_ID = Int32.Parse(receivedMessage[1]);
+            double[] messageAsDouble = new double[4];
+            int pulse_id = Int32.Parse(receivedMessage[1]);
 
-            if (globalDataSet.DebugMode) Debug.WriteLine("receivedMessage: " + receivedMessage[0]);
+            Debug.WriteLine("receivedMessage: " + receivedMessage[0]);
 
-            aliveBit = true;
-
-            // remove x, y, z character in message string
-            message = message.Replace("x", "");
-            message = message.Replace("y", "");
-            message = message.Replace("z", "");
-            //message = message.Replace(".", ",");
-
-            // Split message to x, y, z and timestamp value
-            String[] messageData = message.Split(':');
-            Decimal[] messageDataAsDecimal = new Decimal[messageData.Length];
-
-            for (int i = 0; i < 3; i++)
+            if ((pulse_id >= 0) & (pulse_id <= 2))
             {
-                sensorValues[i] = double.Parse(messageData[i], CultureInfo.InvariantCulture.NumberFormat);
-                messageDataAsDecimal[i] = Convert.ToDecimal(sensorValues[i], CultureInfo.InvariantCulture.NumberFormat);
-                //Debug.WriteLine("sensorValues: " + messageDataAsDecimal[i]);
+
+
+                aliveBit = true;
+
+                // remove x, y, z character in message string
+                message = message.Replace("x", "");
+                message = message.Replace("y", "");
+                message = message.Replace("z", "");
+                //message = message.Replace(".", ",");
+
+                // Split message to x, y, z and timestamp value
+                String[] messageData = message.Split(':');
+                Decimal[] messageAsDecimal = new Decimal[messageData.Length];
+
+                for (int i = 0; i < 4; i++)
+                {
+                    // Convert string to double to decimal (decimal is neccesary for the graph)
+                    messageAsDouble[i] = double.Parse(messageData[i], CultureInfo.InvariantCulture.NumberFormat);
+                    messageAsDecimal[i] = Convert.ToDecimal(messageAsDouble[i], CultureInfo.InvariantCulture.NumberFormat);
+                    //Debug.WriteLine("sensorValues: " + messageDataAsDecimal[i]);
+                }
+
+                // Write data to txt file (new text file for each pulse id)
+                string fileName = "pulse_" + pulse_id + ".txt";
+
+                // Create header if file not exist
+                if (!File.Exists(FILE_SAVE_PATH + fileName))
+                {
+                    using (StreamWriter writer = new StreamWriter(FILE_SAVE_PATH + fileName, true))
+                    {
+                        writer.WriteLine("PWM" + ";" + "ENCODER" + ";" + "TIMESTAMP");
+                    }
+                }
+
+                // Write data to text file (APPEND)
+                using (StreamWriter writer = new StreamWriter(FILE_SAVE_PATH + fileName, true))
+                {
+                    writer.WriteLine(messageAsDouble[0] + ";" + messageAsDouble[1] + ";" + messageAsDouble[3]);
+                }
+
+                // Save to db
+                //if (recordIsActive)
+                //{
+                //    // Save write cycles to stop if max write cycle is reached     
+                //    if (sampleStep == sampleTimeFactor)
+                //    {
+                //        if ((writeCycle < MAX_WRITE_CYCLE))
+                //        {
+                //            if (!notExecuted) writeToDb(messageDataAsDecimal, sensor_joint_ID, dataSet_Db1);
+                //            if (sensor_joint_ID == firstSensorId)
+                //            {
+                //                sampleStep = DEFAULT_SAMPLE_TIME_FACTOR;
+                //                writeCycle++;
+                //                helperFunctions.changeElementText(labelSavedRows, writeCycle.ToString(), false);
+                //            }
+                //        }
+                //        else
+                //        {
+                //            writeCycle = 0;
+                //            recordIsActive = false;
+                //            savedRowCounter = 0;
+                //            notExecuted = true;
+                //            firstSensorId = -1;
+                //            button_recordToDb.BeginInvoke((MethodInvoker)delegate () { button_recordToDb.PerformClick(); });
+                //            helperFunctions.changeElementEnable(textBox_maxSamples, true);
+                //            helperFunctions.changeElementText(button_recordToDb, "Record to db", false);
+                //            MessageBox.Show("Measurement finished.");
+                //        }
+                //    }
+                //    else if (sensor_joint_ID == firstSensorId) sampleStep++;
+
+                //    // Save first sensor id to calculate correct sample time
+                //    // Next sample is when the first sensor id comes again
+                //    if (notExecuted)
+                //    {
+                //        firstSensorId = sensor_joint_ID;
+                //        notExecuted = false;
+                //    }
+                //}
+                // Show sensor values in graph
+                if ((checkBox_showGraphs.Checked) && (formCharts != null)) formCharts.setNewChartData(messageAsDecimal, pulse_id);
+
+                aliveBit = false;
+                if (globalDataSet.ShowProgramDuration) Debug.WriteLine(globalDataSet.Timer_programExecution.ElapsedMilliseconds - globalDataSet.TimerValue);
             }
-
-            // Write data to txt file
-            string fileName = "pulse_" + sensor_joint_ID + ".txt";
-
-            using (StreamWriter writer = new StreamWriter(FILE_SAVE_PATH + fileName, true))
-            {
-                writer.WriteLine(sensorValues[0] + ";" + 0);
-            }
-
-            // Save to db
-            //if (recordIsActive)
-            //{
-            //    // Save write cycles to stop if max write cycle is reached     
-            //    if (sampleStep == sampleTimeFactor)
-            //    {
-            //        if ((writeCycle < MAX_WRITE_CYCLE))
-            //        {
-            //            if (!notExecuted) writeToDb(messageDataAsDecimal, sensor_joint_ID, dataSet_Db1);
-            //            if (sensor_joint_ID == firstSensorId)
-            //            {
-            //                sampleStep = DEFAULT_SAMPLE_TIME_FACTOR;
-            //                writeCycle++;
-            //                helperFunctions.changeElementText(labelSavedRows, writeCycle.ToString(), false);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            writeCycle = 0;
-            //            recordIsActive = false;
-            //            savedRowCounter = 0;
-            //            notExecuted = true;
-            //            firstSensorId = -1;
-            //            button_recordToDb.BeginInvoke((MethodInvoker)delegate () { button_recordToDb.PerformClick(); });
-            //            helperFunctions.changeElementEnable(textBox_maxSamples, true);
-            //            helperFunctions.changeElementText(button_recordToDb, "Record to db", false);
-            //            MessageBox.Show("Measurement finished.");
-            //        }
-            //    }
-            //    else if (sensor_joint_ID == firstSensorId) sampleStep++;
-
-            //    // Save first sensor id to calculate correct sample time
-            //    // Next sample is when the first sensor id comes again
-            //    if (notExecuted)
-            //    {
-            //        firstSensorId = sensor_joint_ID;
-            //        notExecuted = false;
-            //    }
-            //}
-            // Show sensor values in graph
-            if ((checkBox_showGraphs.Checked) && (formCharts != null)) formCharts.setNewChartData(messageDataAsDecimal, sensor_joint_ID);
-
-            aliveBit = false;
-            if (globalDataSet.ShowProgramDuration) Debug.WriteLine(globalDataSet.Timer_programExecution.ElapsedMilliseconds - globalDataSet.TimerValue);
         }
 
         //private void loadConfiguration()
