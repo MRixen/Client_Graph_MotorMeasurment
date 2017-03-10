@@ -29,6 +29,11 @@ namespace WindowsFormsApplication6
         private bool recordIsActive = false;
         private bool calibrationIsActive = false;
         private bool startMeas = false;
+        const int MAX_BUFFER_SIZE = 5;
+        int buffCounter = 0;
+        int pulse_id_last = -1;
+        const int UP_LIMIT = 5;
+        const int DOWN_LIMIT = 5;
 
         private System.IO.StreamWriter writer = new System.IO.StreamWriter("DiagnoseDebugLog.log", true);
         private RBC.TcpIpCommunicationUnit tcpDiagnoseClient = null;
@@ -759,10 +764,11 @@ namespace WindowsFormsApplication6
             String message = receivedMessage[0];
             double[] messageAsDouble = new double[4];
             int pulse_id = Int32.Parse(receivedMessage[1]);
+            double[] messageBuffer = new double[MAX_BUFFER_SIZE];
 
-            Debug.WriteLine("receivedMessage: " + receivedMessage[0]);
+            //Debug.WriteLine("receivedMessage: " + receivedMessage[0]);
 
-            if ((pulse_id >= 0) & (pulse_id <= 2))
+            if ((pulse_id >= 0) & (pulse_id <= 6))
             {
 
 
@@ -797,6 +803,20 @@ namespace WindowsFormsApplication6
                         writer.WriteLine("PWM" + ";" + "ENCODER" + ";" + "TIMESTAMP");
                     }
                 }
+
+                //// Write data to 5-segment buffer 
+                //if ((buffCounter >= MAX_BUFFER_SIZE) | (pulse_id_last != pulse_id)) buffCounter = 0;
+                //else buffCounter++;
+                //messageBuffer[buffCounter] = messageAsDouble[1];
+
+                //// Check buffer values for wrong content
+                //for (int i = 0; i < messageBuffer.Length; i++)
+                //{
+                //    if (((messageBuffer[i] + UP_LIMIT) <= messageBuffer[i + 1]) | (messageBuffer[i] >= (messageBuffer[i + 1] + DOWN_LIMIT)))
+                //    {
+
+                //    }
+                //}
 
                 // Write data to text file (APPEND)
                 using (StreamWriter writer = new StreamWriter(FILE_SAVE_PATH + fileName, true))

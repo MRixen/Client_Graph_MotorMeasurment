@@ -87,8 +87,8 @@ namespace WindowsFormsApplication6
                 charts[i].Series[0].BorderWidth = 3;
                 charts[i].Series[0].Color = graphLineColors[i];
                 charts[i].ChartAreas[0].AxisY.Interval = 10;
-                charts[i].ChartAreas[0].AxisY.Minimum = -300;
-                charts[i].ChartAreas[0].AxisY.Maximum = 300;
+                charts[i].ChartAreas[0].AxisY.Minimum = -1000;
+                charts[i].ChartAreas[0].AxisY.Maximum = 1000;
                 charts[i].ChartAreas[0].AxisX.Title = "Timestamp [ms]";
                 charts[i].ChartAreas[0].AxisY.Title = "Angle " + chartXaxisLabel[i] + " [deg]";
                 charts[i].ChartAreas[0].AxisY.MajorGrid.Interval = 5;

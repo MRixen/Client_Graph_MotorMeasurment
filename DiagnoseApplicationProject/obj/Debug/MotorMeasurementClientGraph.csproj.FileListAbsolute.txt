@@ -1,8 +1,6 @@
 C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\bin\Debug\WindowsFormsApplication6.exe.config
 C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\obj\Debug\WindowsFormsApplication6.exe
 C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\obj\Debug\WindowsFormsApplication6.pdb
-C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\bin\Debug\Resources\Database1_log.ldf
-C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\bin\Debug\Resources\Database1.mdf
 C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\bin\Debug\WindowsFormsApplication6.exe.manifest
 C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\bin\Debug\WindowsFormsApplication6.application
 C:\Users\Manuel.Rixen\Documents\GitHub\Client_Graph_MotorMeasurment\DiagnoseApplicationProject\bin\Debug\WindowsFormsApplication6.exe
